@@ -60,11 +60,33 @@ const chainWithHistory = new RunnableWithMessageHistory({
   historyMessagesKey: "history",
 });
 
-// Fungsi untuk parse lokasi dari promptText (diperbarui)
 function parseLocation(promptText) {
-  const match = promptText.match(/(di|untuk|lokasi)\s+([a-zA-Z]+(?:\s+[a-zA-Z]+)*?)(?:\s|$|[.,!?])/i);
-  return match ? match[2].trim() : null;
+  const text = promptText.toLowerCase();
+
+  const triggers = ["di", "lokasi", "daerah"];
+
+  // cari trigger pertama yang muncul
+  for (const trigger of triggers) {
+    const index = text.indexOf(` ${trigger} `);
+    if (index !== -1) {
+      // ambil semua kata setelah trigger
+      const afterTrigger = text.slice(index + trigger.length + 2).trim();
+      
+      // pecah jadi kata-kata
+      const words = afterTrigger.split(/\s+/);
+
+      // ambil kata pertama yang bukan kata umum (“ke”, “yang”, “untuk”, dsb.)
+      const blacklist = ["ke", "yang", "untuk", "di", "pada", "di"];
+      const location = words.find(w => !blacklist.includes(w));
+
+      if (location) {
+        return location.replace(/[.,!?]/g, "");
+      }
+    }
+  }
+  return null;
 }
+
 
 // Fungsi baru untuk fetch data cuaca
 async function getWeatherData(city) {
@@ -138,8 +160,9 @@ export async function askLLM(promptText, sessionId = "default") {
       }
     } else {
       console.log("No location detected in prompt");
-      input = `${promptText}\n\nTidak ada lokasi yang disebutkan, jadi rekomendasi umum.`;
+      input = promptText;
     }
+
     
     const response = await chainWithHistory.invoke(
       { input },
