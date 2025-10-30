@@ -14,7 +14,6 @@ const model = new ChatGroq({
   model: "llama-3.3-70b-versatile",
 });
 
-// Update prompt untuk menyertakan konteks cuaca
 const prompt = ChatPromptTemplate.fromMessages([
   [
     "system",
@@ -46,7 +45,6 @@ async function loadHistoryFromDB(userId) {
   return history;
 }
 
-// Pastikan chainWithHistory didefinisikan sebelum askLLM
 const chainWithHistory = new RunnableWithMessageHistory({
   runnable: chain,
   getMessageHistory: async (sessionId) => {
@@ -65,17 +63,13 @@ function parseLocation(promptText) {
 
   const triggers = ["di", "lokasi", "daerah"];
 
-  // cari trigger pertama yang muncul
   for (const trigger of triggers) {
     const index = text.indexOf(` ${trigger} `);
     if (index !== -1) {
-      // ambil semua kata setelah trigger
       const afterTrigger = text.slice(index + trigger.length + 2).trim();
       
-      // pecah jadi kata-kata
       const words = afterTrigger.split(/\s+/);
 
-      // ambil kata pertama yang bukan kata umum (“ke”, “yang”, “untuk”, dsb.)
       const blacklist = ["ke", "yang", "untuk", "di", "pada", "di"];
       const location = words.find(w => !blacklist.includes(w));
 
@@ -88,7 +82,7 @@ function parseLocation(promptText) {
 }
 
 
-// Fungsi baru untuk fetch data cuaca
+// Fungsi untuk fetch data cuaca
 async function getWeatherData(city) {
   try {
     const apiKey = process.env.WEATHER_API_KEY;
@@ -140,7 +134,6 @@ async function getWeatherData(city) {
 export async function askLLM(promptText, sessionId = "default") {
   console.log(`askLLM called with prompt: "${promptText}", sessionId: ${sessionId}`);
   
-  // Debug: Pastikan chainWithHistory ada
   if (!chainWithHistory) {
     console.error("chainWithHistory is not defined!");
     return "Maaf, ada error internal. Coba lagi nanti!";
@@ -162,7 +155,6 @@ export async function askLLM(promptText, sessionId = "default") {
       console.log("No location detected in prompt");
       input = promptText;
     }
-
     
     const response = await chainWithHistory.invoke(
       { input },
@@ -175,3 +167,5 @@ export async function askLLM(promptText, sessionId = "default") {
     return "Terjadi kesalahan saat memproses permintaan.";
   }
 }
+
+export { parseLocation, getWeatherData };
