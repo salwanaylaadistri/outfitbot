@@ -14,7 +14,7 @@ beforeEach(() => {
   mockAxiosGet.mockReset();
 });
 
-describe("🧠 OutfitBot Agent Tests", () => {
+describe("OutfitBot Agent Tests", () => {
   // Test 1: parseLocation menemukan lokasi dengan kata "di"
   test("parseLocation mendeteksi lokasi dari kalimat dengan 'di'", () => {
     const input = "Bagaimana outfit yang cocok di Jakarta?";
